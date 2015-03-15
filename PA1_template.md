@@ -32,7 +32,8 @@ The variables included in this dataset are:
 
 ## Libraries used
 
-```{r}
+
+```r
 library (plyr)
 library(ggplot2)
 ```
@@ -41,14 +42,16 @@ library(ggplot2)
 
 Asumming the activity,csv file is unzipped into the local directory.
 
-```{r}
+
+```r
 activityData <- read.csv('activity.csv', header = TRUE,
                     colClasses=c("numeric", "character", "numeric"))
 ```
 
 Convert the date column to a date data type.
 
-```{r}
+
+```r
 activityData$date <- as.Date(activityData$date) 
 ```
 
@@ -56,7 +59,8 @@ activityData$date <- as.Date(activityData$date)
 
 ddply can subset a data frame, apply a function and then combine results into a data frame.
 
-```{r}
+
+```r
 total_steps_each_day <- ddply (activityData,
                                 .(date), 
                                 summarize, 
@@ -65,18 +69,33 @@ total_steps_each_day <- ddply (activityData,
 
 Show a histogram of the total number of steps taken each day.  Note the outliers at the lower values.
 
-```{r}
+
+```r
 hist(total_steps_each_day$totalStepsPerDay, 
      breaks=20,
      xlab="Total Number of Steps Taken Each Day",
      main="Steps Taken Each Day")
 ```
 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
 Mean and median of steps taken each day.
 
-```{r}
+
+```r
 mean(total_steps_each_day$totalStepsPerDay); 
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 median(total_steps_each_day$totalStepsPerDay); 
+```
+
+```
+## [1] 10395
 ```
 
 
@@ -90,7 +109,8 @@ median(total_steps_each_day$totalStepsPerDay);
 
 ddply can subset a data frame, apply a function and then combine results into a data frame.
 
-```{r}
+
+```r
 steps_per_interval <- ddply (activityData,
               .(interval), 
               summarize, 
@@ -99,7 +119,8 @@ steps_per_interval <- ddply (activityData,
 
 Plot
 
-```{r}
+
+```r
 qplot(x=interval, y=averageStepsPerInterval, data = steps_per_interval,  geom = "line",
       xlab="5-Minute Interval",
       ylab="Average Steps",
@@ -107,10 +128,18 @@ qplot(x=interval, y=averageStepsPerInterval, data = steps_per_interval,  geom = 
       )
 ```
 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png) 
+
 The interval with the most steps (most active):
 
-```{r}
+
+```r
 steps_per_interval[which.max(steps_per_interval$averageStepsPerInterval), ]
+```
+
+```
+##     interval averageStepsPerInterval
+## 104      835                206.1698
 ```
 
 
@@ -119,10 +148,15 @@ steps_per_interval[which.max(steps_per_interval$averageStepsPerInterval), ]
 
 ### 1. Total number of missing values
 
-```{r}
+
+```r
 missing <- is.na (activityData$steps)
 # how many are missing?
 sum(missing)
+```
+
+```
+## [1] 2304
 ```
 ### 2. Imputing missing values
 
@@ -130,7 +164,8 @@ Take a copy of the activityData and fill in any missing values with the mean ste
 
 There are some intervals with no mean, so in that case use the overall mean across all intervals.
 
-```{r}
+
+```r
 activityImputed <- activityData
 
 activityImputed$steps[missing] <-
@@ -142,7 +177,8 @@ activityImputed$steps[is.na (activityImputed$steps)] <-
   
 Show a histogram of the total number of steps taken each day for the Imputed data.  
 
-```{r}
+
+```r
 total_steps_each_dayImp <- ddply (activityImputed,
                                 .(date), 
                                 summarize, 
@@ -154,14 +190,28 @@ hist(total_steps_each_dayImp$totalStepsPerDay,
      main="Steps Taken Each Day (NA values imputed)")
 ```
 
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
+
 Note the outliers at the lower values are now gone.
 
 
 Check the Mean and median of steps taken each day for the Imputed data.
 
-```{r}
+
+```r
 mean(total_steps_each_dayImp$totalStepsPerDay); 
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(total_steps_each_dayImp$totalStepsPerDay); 
+```
+
+```
+## [1] 10766.19
 ```
 
 These values have indeed changed.  Both the mean and the median increased.  This increase makes sense as we are replacing NA values with mean values for the interval (or with the mean for all intervals in some cases mentioned above).
@@ -171,7 +221,8 @@ These values have indeed changed.  Both the mean and the median increased.  This
 
 Build a daytype variable as a factor to distinguish weekdays from weekend days.
 
-```{r}
+
+```r
 activityImputed$daytype <- weekdays(activityImputed$date)  
 for (i in 1:nrow(activityImputed)) {                                       
     if (activityImputed[i,]$daytype %in% c("Saturday","Sunday")) {             
@@ -187,7 +238,8 @@ for (i in 1:nrow(activityImputed)) {
 
 Plotting weekend versus weekday shows definite differences in the activity patterns.  For example, weekend activity starts later in the day.
 
-```{r}
+
+```r
 steps_per_interval <- ddply (activityImputed,
               .(interval, daytype), 
               summarize, 
@@ -200,6 +252,8 @@ ggplot(steps_per_interval, aes(x=interval, y=averageStepsPerInterval)) +
         labs(x="Interval", y="Steps") +
         theme_gray()
 ```
+
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png) 
 
 ## Conclusions
 
